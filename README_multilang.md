@@ -1,6 +1,6 @@
 
 # ICU Mortality Prediction using MIMIC-III Dataset
-（项目作者：张兆华 / Lukas Zhang）
+（项目作者：张兆华 / Lukas ）
 
 ---
 
