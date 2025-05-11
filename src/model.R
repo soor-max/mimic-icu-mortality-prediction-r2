@@ -63,3 +63,8 @@ output <- data.frame(
   xgboost = xgb_pred
 )
 write.csv(output, "output/predictions.csv", row.names = FALSE)
+cat("AUC scores:\n")
+cat("Logistic Regression AUC:", auc(logit_auc), "\n")
+cat("Random Forest AUC:", auc(rf_auc), "\n")
+cat("XGBoost AUC:", auc(xgb_auc), "\n")
+
