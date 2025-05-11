@@ -1,1 +1,47 @@
 
+---
+title: "01 - Data Cleaning and Preparation"
+author: "张兆华 / Lukas Zhang"
+output: html_document
+---
+
+## 📌 项目背景 | Background
+
+本分析基于 MIMIC-III 数据集中提取的 ICU 病人特征，目的是为后续建立死亡预测模型做准备。主要任务包括缺失值处理、变量筛选、特征工程等。
+
+## 🔍 加载数据
+
+```{r load-data}
+data <- read.csv("data/cleaned_data.csv")
+str(data)
+summary(data)
+```
+
+## 🧼 缺失值处理
+
+```{r missing-values}
+sum(is.na(data))  # 查看缺失数量
+data[is.na(data)] <- -999  # 简单填充策略（实际项目可选择更合理方法）
+```
+
+## 🔢 类型转换
+
+```{r convert-type}
+if ("gender" %in% names(data)) {
+  data$gender <- ifelse(data$gender == "male", 1, 0)
+}
+data$mortality <- as.factor(data$mortality)
+```
+
+## 📊 描述性统计
+
+```{r summary-stats}
+summary(data)
+```
+
+## ✅ 导出清洗后的数据（可选）
+
+```{r export}
+write.csv(data, "data/cleaned_data_exported.csv", row.names = FALSE)
+```
+

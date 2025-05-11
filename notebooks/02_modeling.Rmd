@@ -1,1 +1,90 @@
 
+---
+title: "02 - Modeling and Evaluation"
+author: "张兆华 / Lukas Zhang"
+output: html_document
+---
+
+## 🧠 模型训练与评估
+
+本部分基于清洗后的 ICU 数据集，使用三种常用模型进行训练：Logistic Regression、Random Forest、XGBoost，并对比其性能表现。
+
+## 📦 加载依赖包
+
+```{r load-libraries}
+library(caret)
+library(randomForest)
+library(xgboost)
+library(pROC)
+```
+
+## 📥 读取清洗后的数据
+
+```{r load-data}
+data <- read.csv("data/cleaned_data.csv")
+data$mortality <- as.factor(data$mortality)
+```
+
+## ✂️ 拆分训练集和测试集
+
+```{r split}
+set.seed(42)
+train_index <- createDataPartition(data$mortality, p = 0.8, list = FALSE)
+train_data <- data[train_index, ]
+test_data <- data[-train_index, ]
+```
+
+## 📈 Logistic Regression
+
+```{r logistic}
+logit_model <- glm(mortality ~ ., data = train_data, family = "binomial")
+logit_pred <- predict(logit_model, newdata = test_data, type = "response")
+```
+
+## 🌳 Random Forest
+
+```{r rf}
+train_data$mortality <- as.factor(train_data$mortality)
+rf_model <- randomForest(mortality ~ ., data = train_data)
+rf_pred <- predict(rf_model, newdata = test_data, type = "prob")[,2]
+```
+
+## 🚀 XGBoost
+
+```{r xgb}
+train_label <- as.numeric(as.character(train_data$mortality))
+test_label <- as.numeric(as.character(test_data$mortality))
+train_matrix <- as.matrix(train_data[, setdiff(names(train_data), "mortality")])
+test_matrix <- as.matrix(test_data[, setdiff(names(test_data), "mortality")])
+xgb_train <- xgb.DMatrix(data = train_matrix, label = train_label)
+xgb_test <- xgb.DMatrix(data = test_matrix)
+xgb_model <- xgboost(data = xgb_train, nrounds = 50, objective = "binary:logistic", verbose = 0)
+xgb_pred <- predict(xgb_model, newdata = xgb_test)
+```
+
+## 📊 ROC 曲线对比
+
+```{r roc}
+logit_auc <- roc(test_label, logit_pred)
+rf_auc <- roc(test_label, rf_pred)
+xgb_auc <- roc(test_label, xgb_pred)
+
+plot(logit_auc, col = "blue", main = "ROC Curves")
+lines(rf_auc, col = "green")
+lines(xgb_auc, col = "red")
+legend("bottomright", legend = c("Logistic", "RandomForest", "XGBoost"),
+       col = c("blue", "green", "red"), lwd = 2)
+```
+
+## 📤 输出预测结果
+
+```{r save}
+output <- data.frame(
+  true_label = test_label,
+  logistic = logit_pred,
+  random_forest = rf_pred,
+  xgboost = xgb_pred
+)
+write.csv(output, "output/predictions.csv", row.names = FALSE)
+```
+
