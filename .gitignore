@@ -3,5 +3,4 @@ data/*
 !data/placeholder.txt
 
 # 忽略 output 目录下的所有文件，保留占位文件
-output/*
-!output/placeholder.txt
+
